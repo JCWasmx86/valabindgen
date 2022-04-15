@@ -1,3 +1,3 @@
 app_sources = [
-	'main.vala'
+	'app/main.vala'
 ]

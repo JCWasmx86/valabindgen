@@ -1,5 +1,5 @@
 parser_sources = [
-	'parser.vala',
-	'typebuilder.vala',
-	'sourcefile_generator.vala',
+	'parser/parser.vala',
+	'parser/typebuilder.vala',
+	'parser/sourcefile_generator.vala',
 ]

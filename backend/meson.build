@@ -1,9 +1,9 @@
 backend_sources = [
-	'configuration.vala',
-	'model.vala',
-	'modeldelegate.vala'
-	'modelenum.vala',
-	'modelfunction.vala'
-	'modelstruct.vala',
-	'modeltype.vala',
+	'backend/configuration.vala',
+	'backend/model.vala',
+	'backend/modeldelegate.vala',
+	'backend/modelenum.vala',
+	'backend/modelfunction.vala',
+	'backend/modelstruct.vala',
+	'backend/modeltype.vala'
 ]
