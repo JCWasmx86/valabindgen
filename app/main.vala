@@ -15,7 +15,8 @@ namespace ValaBindGen {
 			var config = Configuration.load (argv[1]);
 			var file = SourceFileGenerator.generate (config);
 			var p = new Parser ();
-			p.parse (file);
+			var m = p.parse (file);
+			m.generate (config);
 			info ("%s", file);
 		} catch (Error e) {
 			critical ("%s", e.message);

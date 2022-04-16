@@ -5,5 +5,6 @@ backend_sources = [
 	'backend/modelenum.vala',
 	'backend/modelfunction.vala',
 	'backend/modelstruct.vala',
-	'backend/modeltype.vala'
+	'backend/modeltype.vala',
+	'backend/utils.vala'
 ]

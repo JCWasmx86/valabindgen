@@ -67,6 +67,12 @@ namespace Clang {
 		public TypeKind kind;
 		[CCode (cname = "clang_getTypeSpelling")]
 		public String spelling ();
+
+		[CCode (cname = "clang_getResultType")]
+		public CXType result ();
+
+		[CCode (cname = "clang_getPointeeType")]
+		public CXType pointee ();
 	}
 
 	[CCode (cname = "enum CXTypeKind")]

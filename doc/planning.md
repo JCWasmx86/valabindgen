@@ -27,11 +27,15 @@ Functions are assigned to structs, iff:
 
 Typedefs are transformed:
 - Typedefs to fundamental types like `int` are transformed to e.g. `class Foo : int`
+
 Functions are transformed:
 - Non-typedef'd function pointers get a new delegate with a generated name
 - Using heuristics, reduce the number of parameters:
   - If there is an array and the next parameter is like `$SOMEINT_VALUE size_$PARAMNAME`, consider it as an array length
   - If the parameter is a function pointer and the next element is a `void *` and the last parameter of the function pointer is a `void*`, too, consider it a user_data and ignore this parameter
+  
+Delegates are transformed:
+- If every time this delegate is passed to a function, the next argument resolves to `void*` and the last argument of the delegate is a `void*`, too.
 
 Names are transformed:
 - Remove the common prefix, but only until `_`.

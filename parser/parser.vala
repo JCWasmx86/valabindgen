@@ -21,11 +21,40 @@ namespace ValaBindGen {
 		class TmpFunction : Tmp {
 			internal string name;
 			internal Gee.List<CursorWrapper> parameters { get; set; default = new Gee.ArrayList<CursorWrapper>(); }
-			internal CursorWrapper? return_type;
+			internal Type? return_type;
+
+			internal ModelFunction to_model () {
+				var ret = new ModelFunction ();
+				ret.name = this.name;
+				info("===%s===", name);
+				var idx = 0;
+				foreach (var p in this.parameters) {
+					var arg_name = "arg%u".printf (idx);
+					idx++;
+					info("%s", p.cursor.cursor_type ().spelling ().str);
+					if (p.cursor.spelling ().str != "")
+						arg_name = p.cursor.spelling ().str.dup ();
+					p.cursor.visit_children ((c, p_) => {
+						return ChildVisitResult.CONTINUE;
+					});
+					ret.parameters.add (new ModelParameter (arg_name));
+				}
+				info ("%s", this.return_type.to_string ());
+				return ret;
+			}
 		}
 		class TmpEnum : Tmp {
 			internal string name;
+			internal bool from_typedef;
 			internal Gee.List<string> names { get; set; default = new Gee.ArrayList<string>(); }
+
+			internal ModelEnum to_model () {
+				var me = new ModelEnum ();
+				me.name = this.name;
+				me.from_typedef = this.from_typedef;
+				me.names.add_all (this.names);
+				return me;
+			}
 		}
 		class TmpStruct : Tmp {
 			internal string name;
@@ -37,7 +66,7 @@ namespace ValaBindGen {
 			internal Gee.List<CursorWrapper> nondirect_typedefs { get; set; default = new Gee.ArrayList<CursorWrapper>(); }
 		}
 		Gee.List<CursorWrapper> cursors { get; set; default = new Gee.ArrayList<CursorWrapper>(); }
-		internal void parse (string file) {
+		internal Model parse (string file) {
 			var idx = new Index ();
 			var tu = idx.parse_translation_unit (file, new string[0], new UnsavedFile[0], 0);
 			var c = tu.get_translation_unit_cursor ();
@@ -67,10 +96,12 @@ namespace ValaBindGen {
 						if (a.kind == CursorKind.PARM_DECL) {
 							tf.parameters.add (new CursorWrapper (a));
 						} else if (a.kind == CursorKind.TYPE_REF) {
-							tf.return_type = new CursorWrapper (a);
+							tf.return_type = new TypeBuilder ().build (a.cursor_type ());
 						}
 						return ChildVisitResult.CONTINUE;
 					});
+					if (tf.return_type == null)
+						tf.return_type = new TypeBuilder ().build (cc.cursor_type ().result ());
 					list.add (tf);
 					break;
 				case CursorKind.STRUCT_DECL:
@@ -99,27 +130,52 @@ namespace ValaBindGen {
 					error ("Unexpected kind: %s", cc.kind.spelling ().str);
 				}
 			}
-			foreach (var t in list) {
-				if (!(t is TmpFunction))
-					continue;
-				var tf = (TmpFunction) t;
-				info ("============%s==========", tf.name);
-				if (tf.return_type != null) {
-					info ("%s returns a %s", tf.name, tf.return_type.cursor.spelling ().str);
-					new TypeBuilder ().build (tf.return_type.cursor.cursor_type ());
-				}
-				uint cnter = 0;
-				foreach (var param in tf.parameters) {
-					var param_name = param.cursor.spelling ().str == "" ? "arg%u".printf (cnter) : param.cursor.spelling ().str.dup ();
-					param.cursor.visit_children ((a, b) => {
-						info ("%s %s", a.cursor_type ().spelling ().str, param_name);
+			foreach (var cw in this.cursors) {
+				if (cw.cursor.kind == CursorKind.TYPEDEF_DECL) {
+					var is_enum = false;
+					var is_struct = false;
+					var te = new TmpEnum ();
+					te.name = cw.cursor.spelling ().str.dup ();
+					te.from_typedef = true;
+					var ts = new TmpStruct ();
+					ts.name = cw.cursor.spelling ().str.dup ();
+					cw.cursor.visit_children ((ccc, unused2) => {
+						ccc.visit_children ((c, p) => {
+							switch (c.kind) {
+								case CursorKind.ENUM_CONSTANT_DECL:
+									te.names.add (c.spelling ().str.dup ());
+									is_enum = true;
+									break;
+								case CursorKind.FIELD_DECL:
+									ts.members.add (new CursorWrapper (c));
+									is_struct = true;
+									break;
+								default:
+									info ("Unknown thing: %s (%s)", c.spelling ().str, c.kind.spelling ().str);
+									break;
+							}
+							return ChildVisitResult.CONTINUE;
+						});
 						return ChildVisitResult.CONTINUE;
 					});
-					info ("//%s %s", param.cursor.cursor_type ().spelling ().str, param.cursor.spelling ().str);
-					cnter++;
-					info ("%u", cnter);
+					if (is_enum)
+						list.add (te);
+					if (is_struct)
+						list.add (ts);
 				}
 			}
+			var m = new Model ();
+			foreach (var l in list) {
+				if (l is TmpEnum) {
+					var te = (TmpEnum) l;
+					if (te.name != "")
+						m.enums.add (te.to_model ());
+				} else if (l is TmpFunction) {
+					var tf = (TmpFunction) l;
+					m.functions.add (tf.to_model ());
+				}
+			}
+			return m;
 		}
 
 		ChildVisitResult visit (Cursor c, Cursor parent) {
