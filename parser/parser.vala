@@ -26,20 +26,19 @@ namespace ValaBindGen {
 			internal ModelFunction to_model () {
 				var ret = new ModelFunction ();
 				ret.name = this.name;
-				info("===%s===", name);
 				var idx = 0;
 				foreach (var p in this.parameters) {
 					var arg_name = "arg%u".printf (idx);
 					idx++;
-					info("%s", p.cursor.cursor_type ().spelling ().str);
+					var type = new TypeBuilder ().build (p.cursor.cursor_type ());
 					if (p.cursor.spelling ().str != "")
 						arg_name = p.cursor.spelling ().str.dup ();
 					p.cursor.visit_children ((c, p_) => {
 						return ChildVisitResult.CONTINUE;
 					});
-					ret.parameters.add (new ModelParameter (arg_name));
+					ret.parameters.add (new ModelParameter (arg_name, type));
 				}
-				info ("%s", this.return_type.to_string ());
+				ret.return_type = this.return_type;
 				return ret;
 			}
 		}
@@ -58,7 +57,19 @@ namespace ValaBindGen {
 		}
 		class TmpStruct : Tmp {
 			internal string name;
+			internal bool from_typedef;
 			internal Gee.List<CursorWrapper> members { get; set; default = new Gee.ArrayList<CursorWrapper>(); }
+
+			internal ModelStruct to_model () {
+				var ms = new ModelStruct ();
+				ms.name = this.name;
+				ms.from_typedef = this.from_typedef;
+				foreach (var cw in this.members) {
+					var c = cw.cursor;
+					info("Member: %s is a %s", c.spelling ().str, c.cursor_type ().spelling ().str);
+				}
+				return ms;
+			}
 		}
 		class TmpTypedef : Tmp {
 			internal string name;
@@ -139,6 +150,7 @@ namespace ValaBindGen {
 					te.from_typedef = true;
 					var ts = new TmpStruct ();
 					ts.name = cw.cursor.spelling ().str.dup ();
+					ts.from_typedef = true;
 					cw.cursor.visit_children ((ccc, unused2) => {
 						ccc.visit_children ((c, p) => {
 							switch (c.kind) {
@@ -173,6 +185,9 @@ namespace ValaBindGen {
 				} else if (l is TmpFunction) {
 					var tf = (TmpFunction) l;
 					m.functions.add (tf.to_model ());
+				} else if (l is TmpStruct) {
+					var ts = (TmpStruct) l;
+					ts.to_model ();
 				}
 			}
 			return m;

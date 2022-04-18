@@ -22,6 +22,7 @@ namespace ValaBindGen {
 			critical ("%s", e.message);
 			return 1;
 		}
-		return 0;
+		var te = 0;
+		return te;
 	}
 }

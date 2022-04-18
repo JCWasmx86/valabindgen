@@ -73,6 +73,12 @@ namespace Clang {
 
 		[CCode (cname = "clang_getPointeeType")]
 		public CXType pointee ();
+
+		[CCode (cname = "clang_getNumArgTypes")]
+		public uint num_arg_types ();
+
+		[CCode (cname = "clang_getArgType")]
+		public CXType arg_type (uint i);
 	}
 
 	[CCode (cname = "enum CXTypeKind")]

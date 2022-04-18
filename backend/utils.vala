@@ -48,5 +48,15 @@ namespace ValaBindGen {
 			}
 			return sb.str.up ();
 		}
+
+		internal static string snake_case (string s) {
+			var sb = new StringBuilder ();
+			for (var i = 0; i < s.length; i++) {
+				sb.append_c (s[i]);
+				if (i < s.length - 1 && s[i + 1].isupper () && ! s[i].isupper ())
+					sb.append_c ('_');
+			}
+			return sb.str.down ();
+		}
 	}
 }
