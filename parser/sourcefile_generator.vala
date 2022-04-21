@@ -25,10 +25,11 @@ namespace ValaBindGen {
 			if (status != 0) {
 				throw new GLib.IOError.FAILED("Failed to create preprocessed file:\nStderr:\n%s".printf (serr));
 			}
-			file.delete();
+			// file.delete();
 			var output_file = File.new_tmp("vbg-output-XXXXXX.c", out fio);
 			fio.output_stream.write_all(sout.data, out written);
 			fio.output_stream.flush ();
+			// gcc -E -dM $HEADER to get the defines
 			return output_file.get_path ();
 		}
 	}

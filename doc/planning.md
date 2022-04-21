@@ -33,7 +33,7 @@ Functions are transformed:
 - Using heuristics, reduce the number of parameters:
   - If there is an array and the next parameter is like `$SOMEINT_VALUE size_$PARAMNAME`, consider it as an array length
   - If the parameter is a function pointer and the next element is a `void *` and the last parameter of the function pointer is a `void*`, too, consider it a user_data and ignore this parameter
-  
+
 Delegates are transformed:
 - If every time this delegate is passed to a function, the next argument resolves to `void*` and the last argument of the delegate is a `void*`, too.
 
@@ -42,6 +42,9 @@ Names are transformed:
 - Make all enum values `UPPER_CASE`
 - Make all function names `snake_case`
 - Make all class/enum names `PascalCase`
+
+## Extract the defines
+Extract all defines using `gcc -E -dM` and apply a user-given regex and map them to e.g. integers/floats/etc. No macro suport for the first few milestones
 
 ## Writing the VAPI
 The user should give a regex for function names, like `gl.*` for OpenGL or `clang_` for libclang. Only the types used by the function will be generated.

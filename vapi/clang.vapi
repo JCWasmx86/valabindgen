@@ -79,6 +79,12 @@ namespace Clang {
 
 		[CCode (cname = "clang_getArgType")]
 		public CXType arg_type (uint i);
+
+		[CCode (cname = "clang_getArraySize")]
+		public long array_size ();
+
+		[CCode (cname = "clang_getArrayElementType")]
+		public CXType array_type ();
 	}
 
 	[CCode (cname = "enum CXTypeKind")]

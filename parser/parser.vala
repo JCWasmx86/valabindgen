@@ -188,6 +188,9 @@ namespace ValaBindGen {
 				} else if (l is TmpStruct) {
 					var ts = (TmpStruct) l;
 					ts.to_model ();
+				} else if (l is TmpTypedef) {
+					var tt = (TmpTypedef)l;
+					m.typedefs.set(tt.name, new TypeBuilder ().build (tt.underlying_type.type));
 				}
 			}
 			return m;

@@ -99,6 +99,19 @@ namespace ValaBindGen {
 	class ArrayType : Type {
 		internal Type element_type;
 		internal size_t len;
+
+		internal ArrayType (long len, Type t) {
+			this.len = len;
+			this.element_type = t;
+		}
+
+		internal override string to_string () {
+			return this.element_type.to_string () + "*/*[%u]*/".printf ((uint)this.len);
+		}
+
+		internal override string to_param_string () {
+			return this.element_type.to_param_string () + "*/*[%u]*/".printf ((uint)this.len);
+		}
 	}
 	class FunctionPointerType : Type {
 		internal Gee.List<Type> parameter_types { get; set; default = new Gee.ArrayList<Type>(); }
@@ -132,8 +145,8 @@ namespace ValaBindGen {
 		}
 	}
 	class TypeRef : Type {
-		string name;
-		bool is_enum;
+		internal string name;
+		internal bool is_enum;
 
 		internal TypeRef (string str) {
 			this.name = str;
@@ -202,6 +215,8 @@ namespace ValaBindGen {
 			case TypeKind.FUNCTION_NO_PROTO:
 			case TypeKind.FUNCTION_PROTO:
 				return new FunctionPointerType (cxt);
+			case TypeKind.CONSTANT_ARRAY:
+				return new ArrayType (cxt.array_size (), this.build (cxt.array_type ()));
 			default:
 				info ("%s %s", cxt.kind.spelling ().str, cxt.spelling ().str);
 				break;

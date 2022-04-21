@@ -4,13 +4,13 @@ namespace ValaBindGen {
 		internal Gee.List<ModelParameter> parameters { get; set; default = new Gee.ArrayList<ModelParameter> (); }
 		internal Type return_type;
 
-		internal string generate (uint prefix_len = 0) {
+		internal string generate (Model m, uint prefix_len = 0) {
 			var sb = new StringBuilder ();
 			sb.append ("\t[CCode (cname = \"").append (this.name).append ("\")]\n");
 			sb.append ("\tpublic static ")
-			 .append ("XXX").append (" ").append (Utils.snake_case (this.name.substring (prefix_len))).append (" (");
+			 .append (this.return_type.to_param_string ()).append (" ").append (Utils.snake_case (this.name.substring (prefix_len))).append (" (");
 			for (var i = 0; i < this.parameters.size; i++)
-				sb.append (this.parameters[i].type.to_param_string ()).append (" ").append (this.parameters[i].name).append (i != this.parameters.size - 1 ? ", " : ");\n");
+				sb.append (m.derive_parameter (this.parameters[i].type).replace ("const ", "")).append (" ").append (this.parameters[i].name).append (i != this.parameters.size - 1 ? ", " : ");\n");
 			if (this.parameters.size == 0)
 				sb.append (");\n");
 			return sb.str;
